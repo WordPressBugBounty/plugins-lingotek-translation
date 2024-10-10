@@ -1,0 +1,8 @@
+# Exclude the bin directory
+bin/
+
+# Exclude log files
+error.log
+
+# Exclude specific directories
+here

@@ -289,7 +289,10 @@ class Lingotek_Admin {
 
 		// disconnect Lingotek account.
 		$delete_access_token = sanitize_text_field(filter_input( INPUT_GET, 'delete_access_token' ));
-		if ( ! empty( $delete_access_token ) ) {
+
+		$update_access_token = sanitize_text_field(filter_input( INPUT_GET, 'update_access_token' ));
+
+		if ( ! empty( $delete_access_token ) && 'true' === $delete_access_token ) {
 			delete_option( 'lingotek_token' );
 			delete_option( 'lingotek_community' );
 			delete_option( 'lingotek_defaults' );
@@ -298,7 +301,7 @@ class Lingotek_Admin {
 		// connect Lingotek account.
 		$database_token_details = get_option( 'lingotek_token', array() );
 		$access_token           = isset( $database_token_details['access_token'] ) ? $database_token_details['access_token'] : null;
-		if ( ! empty( $access_token ) && empty( $delete_access_token ) && ! isset( $database_token_details['login_id'] ) ) {
+		if ( ! empty( $access_token ) && empty( $delete_access_token ) && empty( $update_access_token ) && ! isset( $database_token_details['login_id'] ) ) {
 			// Set and get token details, but only if the login_id is not already set.
 			$this->refresh_lingotek_token( $access_token );
 		}
@@ -327,25 +330,31 @@ class Lingotek_Admin {
 		$token_details = self::has_token_details();
 		$redirect_url  = admin_url( 'admin.php?page=' . $this->plugin_slug . '_settings&sm=account' );
 
-		if ( $token_details ) {
+		if ( $token_details && (empty( $delete_access_token ) && empty( $update_access_token ) ) ) {
 			$access_token = $token_details['access_token'];
 			$login_id     = $token_details['login_id'];
 			$base_url     = get_option( 'lingotek_base_url' );
 			include LINGOTEK_ADMIN_INC . '/settings.php';
 		} else {
-			$connect_url = '';
-			// connect cloak redirect.
-			$connect = sanitize_text_field( filter_input( INPUT_GET, 'connect' ) );
-			if ( ! empty( $connect ) ) {
+			$base_url     = get_option( 'lingotek_base_url' );
+			if ( empty( $base_url ) ) {
 				update_option( 'lingotek_base_url', Lingotek_API::PRODUCTION_URL );
-				$client = new Lingotek_API();
-				echo '<div class="wrap"><p class="description">' . esc_html( __( 'Redirecting to Ray Enterprise to connect your account...', 'lingotek-translation' ) ) . '</p></div>';
-
-				$connect_url = ( 0 === strcasecmp( $connect, 'new' ) ) ? $client->get_new_url( $redirect_url ) : $client->get_connect_url( $redirect_url );
 			}
-			$connect_account_cloak_url_new  = LINGOTEK_NEW_ACCOUNT_LANDING_PAGE;
-			$connect_account_cloak_url_prod = admin_url( 'admin.php?page=' . $this->plugin_slug . '_settings&connect=production' );
+			if (  ! empty( $delete_access_token ) && 'true' === $delete_access_token ) {
+				$connect_url = '';
+				// connect cloak redirect.
+				$connect = sanitize_text_field( filter_input( INPUT_GET, 'connect' ) );
+				if ( ! empty( $connect ) ) {
+					$client = new Lingotek_API();
+					echo '<div class="wrap"><p class="description">' . esc_html( __( 'Redirecting to Ray Enterprise to connect your account...', 'lingotek-translation' ) ) . '</p></div>';
+
+					$connect_url = ( 0 === strcasecmp( $connect, 'new' ) ) ? $client->get_new_url( $redirect_url ) : $client->get_connect_url( $redirect_url );
+				}
+				$connect_account_cloak_url_new  = LINGOTEK_NEW_ACCOUNT_LANDING_PAGE;
+				$connect_account_cloak_url_prod = admin_url( 'admin.php?page=' . $this->plugin_slug . '_settings&connect=production' );
+			}
 			include LINGOTEK_ADMIN_INC . '/settings/connect-account.php';
+			
 		}
 	}
 

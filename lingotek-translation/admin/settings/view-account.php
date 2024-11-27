@@ -62,11 +62,16 @@ if ( ! $community_id ) {
 				'access_token',
 				esc_html( $token_details['access_token'] )
 			);
-			printf(
-				'<p><em>To update your access token, disconnect the account and reconnect by generating a new access token.</em></p>'
-			);
 			?>
 		</label>
+	</td>
+	</tr>
+	<tr>
+	<th></th>
+	<td>
+		<?php
+		echo '<a class="button" href="' . esc_html( $redirect_url ) . '&update_access_token=true">' . esc_html( __( 'Update Token', 'lingotek-translation' ) ) . '</a>';
+		?>
 	</td>
 	</tr>
 	<tr>

@@ -39,7 +39,9 @@ class Lingotek_Metadata_Elementor {
 		'heading'           => array(
 			'title',
 		),
-		'button'            => array(),
+		'button'            => array(
+			'text',
+		),
 		'call-to-action'    => array(
 			'title',
 			'description',
@@ -65,11 +67,37 @@ class Lingotek_Metadata_Elementor {
 		'table-of-contents' => array(),
 		'lottie'            => array(),
 		'theme-site-title'  => array(),
-		'icon-list'         => array(),
-		'icon-box'          => array(
-			'title_text',
+		'icon-list'         => array(
+			'title',
+			'text',
+			'description',
 			'description_text',
+			'title_text',
 		),
+		'icon-box'          => array(
+			'title',
+			'text',
+			'description',
+			'description_text',
+			'title_text',
+			
+		),
+		'slides'          => array(
+			'heading',
+			'description',
+			'button_text',
+			'description_text',
+			'title_text',
+			'title',
+			'text',
+		),
+		'title',
+		'text',
+		'description',
+		'description_text',
+		'title_text',
+		'editor',
+		
 	);
 
 	/**
@@ -98,6 +126,7 @@ class Lingotek_Metadata_Elementor {
 	public static $embedded_widgets = array(
 		'image'                => array(
 			'caption',
+			'alt',
 		),
 		'image-box'            => array(
 			'title_text',
@@ -141,14 +170,19 @@ class Lingotek_Metadata_Elementor {
 	 *
 	 * @since 1.5.3
 	 *
-	 * @param int $post_id The source post id.
+	 * @param array $post_meta_array The post meta array.
+	 * @param array $post_and_template_meta_array The merged array of the post meta and the template meta.
 	 * @return array list of translatable content, where the indexes are the element ids, and the values are the element content
 	 */
-	public static function get_post_metadata_content( $post_id ) {
-		$content_list     = array();
-		$meta_json_string = get_post_meta( $post_id, self::$elementor_data, true );
-		$meta_array       = json_decode( $meta_json_string, true );
-		self::get_elements( $meta_array, $content_list );
+	public static function get_post_metadata_content( $post_meta_array, $post_and_template_meta_array ) {
+		$content_list = array();
+
+		if ( empty($post_and_template_meta_array) ) {
+			self::get_elements( $post_meta_array, $content_list );
+		} else {
+			self::get_elements( $post_and_template_meta_array, $content_list );
+		}
+
 		return $content_list;
 	}
 
@@ -189,13 +223,28 @@ class Lingotek_Metadata_Elementor {
 			$element_widget_type = isset( $element['widgetType'] ) ? $element['widgetType'] : false;
 
 			// Check if element has already been stored, and if the widget has translatable text.
+			$widget_editor_type  = $element_widget_type && array_key_exists( $element_widget_type, self::$text_widgets ) ? true : false;
 			$embedded_widget    = isset( self::$embedded_widgets[ $element_widget_type ] ) ? true : false;
-			if ( ! $element_in_array && $element_settings ) {
+			if ( ! $element_in_array && $widget_editor_type && $element_settings ) {
 				$translatable_fields = self::$text_widgets[ $element_widget_type ];
 				if ( ! empty( $translatable_fields ) ) {
 					foreach ( $translatable_fields as $field ) {
 						if ( 'form_fields' === $field ) {
 							$content_list[ $element['id'] ][ $field ] = self::get_form_fields( $element_settings[ $field ] );
+						} elseif ( 'slides' === $element_widget_type ) {
+							foreach ( $element_settings['slides'] as $index => $slide ) {
+								if ( ! isset( $content_list[ $element['id'] ]['slides'][ $index ] ) ) {
+									$content_list[ $element['id'] ]['slides'][ $index ] = array();
+								}
+								$content_list[ $element['id'] ]['slides'][ $index ][ $field ] = $slide[ $field ];
+							}
+						} elseif ( 'icon-list' === $element_widget_type ) {
+							foreach ( $element_settings['icon_list'] as $index => $icon_list ) {
+								if ( ! isset( $content_list[ $element['id'] ]['icon_list'][ $index ] ) ) {
+									$content_list[ $element['id'] ]['icon_list'][ $index ] = array();
+								}
+								$content_list[ $element['id'] ]['icon_list'][ $index ][ $field ] = $icon_list[ $field ];
+							}
 						} else {
 							$content_list[ $element['id'] ][ $field ] = $element_settings[ $field ];
 						}
@@ -212,7 +261,7 @@ class Lingotek_Metadata_Elementor {
 				// Check embedded elements for more translatable content.
 				self::get_elements( $sub_elements, $content_list );
 			}
-		}//end foreach
+		}
 	}
 
 	/**
@@ -237,6 +286,14 @@ class Lingotek_Metadata_Elementor {
 					foreach ( $translatable_fields as $field ) {
 						if ( 'form_fields' === $field ) {
 							$element['settings'][ $field ] = self::set_form_fields( $element['settings'][ $field ], $translated_element[ $field ] );
+						} else if ( 'slides' === $element_widget_type ) {
+							foreach ( $element_settings['slides'] as $index => $slide ) {
+								$element['settings']['slides'][ $index ][ $field ] = $translated_element['slides'][$index][ $field ];
+							}
+						} elseif ( 'icon-list' === $element_widget_type ) {
+							foreach ( $element_settings['icon_list'] as $index => $icon_list ) {
+								$element['settings']['icon_list'][ $index ][ $field ] = $translated_element['icon_list'][$index][ $field ];
+							}
 						} else {
 							$element['settings'][ $field ] = $translated_element[ $field ];
 						}
@@ -256,7 +313,7 @@ class Lingotek_Metadata_Elementor {
 			}
 			// Save element to list of elements, along with any changes.
 			$element_list[ $key ] = $element;
-		}//end foreach
+		}
 	}
 
 	/**
@@ -393,5 +450,49 @@ class Lingotek_Metadata_Elementor {
 	 */
 	public static function has_string_keys( array $array ) {
 		return count( array_filter( array_keys( $array ), 'is_string' ) ) > 0;
+	}
+
+	/**
+	 * Get the merged array of the post and template meta
+	 *
+	 * @since 1.5.3
+	 *
+	 * @param array $post_meta_array The post meta array.
+	 * @return array $post_and_template_meta_array The merged array of the post meta and the template meta.
+	 */
+	public static function get_merged_post_and_template_meta( $post_meta_array ) {
+		$post_and_template_meta_array = array();
+
+		$template_id = null;
+		$template_meta_array = array();
+
+		// Traverse the array to find the template_id
+		foreach ( $post_meta_array as $element_key => $element ) {
+			if ( isset( $element['elements'] ) ) {
+				foreach ( $element['elements'] as $sub_element ) {
+					if ( isset( $sub_element['settings']['template_id'] ) ) {
+						$template_id = $sub_element['settings']['template_id'];
+						// If template_id is found, fetch the post meta using the template_id
+						if ( $template_id ) {
+							unset( $post_meta_array[ $element_key ] );
+
+							$template_meta_json_string = get_post_meta( $template_id, Lingotek_Metadata_Elementor::$elementor_data, true );
+
+							$template_meta_array_temp = json_decode( $template_meta_json_string, true );
+
+							$template_meta_array = array_merge( $template_meta_array, $template_meta_array_temp );
+
+						}
+					}
+				}
+			}
+		}
+
+		if ( $template_id ) {
+			$post_and_template_meta_array = array_merge( $post_and_template_meta_array, $post_meta_array );
+			$post_and_template_meta_array = array_merge( $post_and_template_meta_array, $template_meta_array );
+		}
+
+		return $post_and_template_meta_array;
 	}
 }

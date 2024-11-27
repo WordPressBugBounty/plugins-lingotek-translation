@@ -133,14 +133,13 @@ class Lingotek_Group_Term extends Lingotek_Group {
 				remove_action( 'create_term', array( PLL()->filters_term, 'save_term' ), 999, 3 );
 				remove_action( 'edit_term', array( PLL()->filters_term, 'save_term' ), 999, 3 );
 				remove_action( 'pre_post_update', array( PLL()->filters_term, 'pre_post_update' ) );
-				remove_filter( 'pre_term_name', array( PLL()->filters_term, 'pre_term_name' ) );
-				remove_filter( 'pre_term_slug', array( PLL()->filters_term, 'pre_term_slug' ), 10, 2 );
+				remove_filter( 'set_pre_term_name', array( PLL()->filters_term, 'set_pre_term_name' ) );
+				remove_filter( 'set_pre_term_slug', array( PLL()->filters_term, 'set_pre_term_slug' ), 10, 2 );
 				add_action( 'pre_post_update', array( PLL()->share_term_slug, 'pre_post_update' ) );
-				add_filter( 'pre_term_name', array( PLL()->share_term_slug, 'pre_term_name' ) );
-				add_filter( 'pre_term_slug', array( PLL()->share_term_slug, 'pre_term_slug' ), 10, 2 );
+				add_filter( 'set_pre_term_name', array( PLL()->share_term_slug, 'set_pre_term_name' ) );
+				add_filter( 'set_pre_term_slug', array( PLL()->share_term_slug, 'set_pre_term_slug' ), 10, 2 );
 				add_action( 'create_term', array( PLL()->share_term_slug, 'save_term' ), 1, 3 );
 				add_action( 'edit_term', array( PLL()->share_term_slug, 'save_term' ), 1, 3 );
-				$_POST['term_lang_choice'] = $tr_lang->slug;
 				$args['slug']              = $term->slug;
 			} else {
 				// attempt to get a unique slug in case it already exists in another language

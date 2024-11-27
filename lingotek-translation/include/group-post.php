@@ -332,9 +332,22 @@ class Lingotek_Group_Post extends Lingotek_Group {
 
 				// Check if elementor data exists in post
 				if ( isset( $fields['metas'][ Lingotek_Metadata_Elementor::$elementor_data ] ) && 'builder' === get_post_meta( $post->ID, Lingotek_Metadata_Elementor::$elementor_edit_mode, true ) ) {
-					$arr['metas'][ Lingotek_Metadata_Elementor::$elementor_data ] = Lingotek_Metadata_Elementor::get_post_metadata_content( $post->ID );
+					$post_meta_json_string = get_post_meta( $post->ID, Lingotek_Metadata_Elementor::$elementor_data, true );
+
+					$post_meta_array = json_decode( $post_meta_json_string, true );
+
+					$post_and_template_meta_array = Lingotek_Metadata_Elementor::get_merged_post_and_template_meta( $post_meta_array );
+
+					if ( !empty($post_and_template_meta_array) ) {
+						$merged_json_string = json_encode( $post_and_template_meta_array );
+						$arr['metas'][ Lingotek_Metadata_Elementor::$elementor_data . '_original' ]  = $merged_json_string;
+					} else {
+						$post_meta_json_string = json_encode( $post_meta_array );
+						$arr['metas'][ Lingotek_Metadata_Elementor::$elementor_data . '_original' ]  = $post_meta_json_string;
+					}
 					// We need to keep the original meta string with the translation
-					$arr['metas'][ Lingotek_Metadata_Elementor::$elementor_data . '_original' ] = get_post_meta( $post->ID, Lingotek_Metadata_Elementor::$elementor_data, true );
+					$arr['metas'][ Lingotek_Metadata_Elementor::$elementor_data ] = Lingotek_Metadata_Elementor::get_post_metadata_content( $post_meta_array, $post_and_template_meta_array );
+
 					// Since the elementor data overwrites post_content this prevents duplicating the content sent up for translation.
 					$arr['post']['post_content'] = '';
 				}

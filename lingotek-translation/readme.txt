@@ -3,8 +3,8 @@ Contributors: chouby, smithworx, erichie, robertdhanna, ipoulsen, elliothanna, l
 Donate link: http://lingotek.com/
 Tags: automation, bilingual, international, language, Lingotek, localization, multilanguage, multilingual, translate, translation, Ray Enterprise
 Requires at least: 3.8
-Tested up to: 6.6.2
-Stable tag: 1.6.8
+Tested up to: 6.7.2
+Stable tag: 1.6.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -124,11 +124,14 @@ For more, visit the [Ray Enterprise documentation site](https://lingotek.atlassi
 5. The Ray Enterprise Translation plugin provides the ability to Copy, Translate, and Ignore each specific custom field. Our plugin supports Wordpress custom fields and advanced custom fields.
 
 == Changelog ==
+= 1.6.9 (2025-02-25) =
+  - Fixed Elementor's breadcrumbs, custom text of post-info widget translation issue.
+
 = 1.6.8 (2024-11-27) =
   - Added the 'Update Token' capability to update the Enterprise API5 token in the WordPress connector.
   - Fixed localization issue for elementor slider and templates
   - Make category uploads/download compatible with Polylang Pro version 3.6.4
-  
+
 = 1.6.7 (2024-10-10) =
   - Removed unwanted file inclusion from the distribution archive.
   - Moved remote scripts into the plugin code

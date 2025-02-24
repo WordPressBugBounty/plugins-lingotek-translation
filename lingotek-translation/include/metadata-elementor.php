@@ -73,6 +73,7 @@ class Lingotek_Metadata_Elementor {
 			'description',
 			'description_text',
 			'title_text',
+			'custom_text',
 		),
 		'icon-box'          => array(
 			'title',
@@ -91,12 +92,21 @@ class Lingotek_Metadata_Elementor {
 			'title',
 			'text',
 		),
+		'post-info'         => array(
+			'title',
+			'text',
+			'description',
+			'description_text',
+			'title_text',
+			'custom_text',
+		),
 		'title',
 		'text',
 		'description',
 		'description_text',
 		'title_text',
 		'editor',
+		'custom_text',
 		
 	);
 
@@ -162,6 +172,11 @@ class Lingotek_Metadata_Elementor {
 		'gallery'              => array(
 			'gallery_title',
 			'show_all_galleries_label',
+		),
+		'author-box'            => array(
+			'author_name',
+			'author_bio',
+			'link_text',
 		),
 	);
 
@@ -238,7 +253,7 @@ class Lingotek_Metadata_Elementor {
 								}
 								$content_list[ $element['id'] ]['slides'][ $index ][ $field ] = $slide[ $field ];
 							}
-						} elseif ( 'icon-list' === $element_widget_type ) {
+						} elseif ( 'icon-list' === $element_widget_type || 'post-info' === $element_widget_type ) {
 							foreach ( $element_settings['icon_list'] as $index => $icon_list ) {
 								if ( ! isset( $content_list[ $element['id'] ]['icon_list'][ $index ] ) ) {
 									$content_list[ $element['id'] ]['icon_list'][ $index ] = array();
@@ -290,7 +305,7 @@ class Lingotek_Metadata_Elementor {
 							foreach ( $element_settings['slides'] as $index => $slide ) {
 								$element['settings']['slides'][ $index ][ $field ] = $translated_element['slides'][$index][ $field ];
 							}
-						} elseif ( 'icon-list' === $element_widget_type ) {
+						} elseif ( 'icon-list' === $element_widget_type || 'post-info' === $element_widget_type  ) {
 							foreach ( $element_settings['icon_list'] as $index => $icon_list ) {
 								$element['settings']['icon_list'][ $index ][ $field ] = $translated_element['icon_list'][$index][ $field ];
 							}

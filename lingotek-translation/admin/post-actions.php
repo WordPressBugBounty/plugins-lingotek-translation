@@ -278,7 +278,7 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 	public function ajax_upload() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
 		$id         = (int) absint( filter_input( INPUT_POST, 'id' ) );
-		$wp_locales = json_decode( array_map( 'sanitize_lingotek_locale',filter_input( INPUT_POST, 'locales' ) ) );
+		$wp_locales = json_decode( filter_input( INPUT_POST, 'locales' ) );
 		if ( isset( $wp_locales ) ) {
 			$lingotek_locales = array_map( 'Lingotek::map_to_lingotek_locale', $wp_locales );
 			$lingotek_locales = array( 'translation_locale_code' => $lingotek_locales );

@@ -746,7 +746,7 @@ abstract class Lingotek_Actions {
                     esc_html( $action_data['action'] )
                 );
 			}
-			if ( null !== sanitize_text_field( filter_input( INPUT_GET, 'bulk-lingotek-' . $action ) ) ) {
+			if ( null !== filter_input( INPUT_GET, 'bulk-lingotek-' . $action ) ) {
 				$text = $action_data['progress'];
 			}
 			if ( isset( $action_data['per_locale'] ) && true === $action_data['per_locale'] ) {
@@ -778,13 +778,13 @@ abstract class Lingotek_Actions {
 			if ( null !== filter_input( INPUT_GET, "bulk-lingotek-$action" ) ) {
 				$action_message = 'delete' === $action ? 'cancel' : $action;
 				$data           = array(
-					'action'   => null === sanitize_text_field( filter_input( INPUT_GET, 'page' ) ) ? ( null === sanitize_text_field( (filter_input( INPUT_GET, 'taxonomy' ) ) ) ? "post_$action" : "term_$action" ) : "string_$action",
-					'taxonomy' => null === sanitize_text_field( filter_input( INPUT_GET, 'taxonomy' ) ) || ! taxonomy_exists( sanitize_text_field( (wp_unslash( filter_input( INPUT_GET, 'taxonomy' ) ) ) ) ) ? '' : sanitize_text_field( (filter_input( INPUT_GET, 'taxonomy' ) ) ),
+					'action'   => null === filter_input( INPUT_GET, 'page' ) ? ( null === filter_input( INPUT_GET, 'taxonomy' ) ? "post_$action" : "term_$action" ) : "string_$action",
+					'taxonomy' => null === filter_input( INPUT_GET, 'taxonomy' ) || ! taxonomy_exists( wp_unslash( filter_input( INPUT_GET, 'taxonomy' ) ) ) ? '' : filter_input( INPUT_GET, 'taxonomy' ),
 					'sendback' => remove_query_arg( array( "bulk-lingotek-$action", 'ids', 'lingotek_warning', 'locales' ), wp_get_referer() ),
 					'ids'      => array_map( 'intval', array_map('sanitize_text_field', explode(',', filter_input(INPUT_GET, 'ids'))) ),
 					// TODO: Fix this based on the possible $action_message values.
 					// phpcs:ignore WordPress.WP.I18n.InterpolatedVariableText
-					'warning'  => null === sanitize_text_field( filter_input( INPUT_GET, 'lingotek_warning' ) ) ? ( null === sanitize_text_field( filter_input( INPUT_GET, 'lingotek_remove' ) ) ? '' : sprintf(__( 'You are about to %s existing translations from your Lingotek community. Are you sure?', 'lingotek-translation' ), esc_html( $action_message ) ) ) : __( 'You are about to overwrite existing translations. Are you sure?', 'lingotek-translation' ),
+					'warning'  => null === filter_input( INPUT_GET, 'lingotek_warning' ) ? ( null === filter_input( INPUT_GET, 'lingotek_remove' ) ? '' : __( "You are about to $action_message existing translations from your Lingotek community. Are you sure?", 'lingotek-translation' ) ) : __( 'You are about to overwrite existing translations. Are you sure?', 'lingotek-translation' ),
 					'nonce'    => wp_create_nonce( 'lingotek_progress' ),
 				);
 				if ( null !== filter_input( INPUT_GET, 'target_locale' ) ) {

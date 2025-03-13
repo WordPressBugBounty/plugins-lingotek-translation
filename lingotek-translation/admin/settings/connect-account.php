@@ -16,7 +16,7 @@ jQuery(document).ready(function ($) {
             type: 'GET',
             url: api_url,
             headers: {
-                'Authorization': 'Bearer'+ access_token,
+                'Authorization': 'Bearer '+ access_token,
             },
             success: function (response) {
                 console.log('success');

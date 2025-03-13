@@ -2,7 +2,7 @@
 /**
 	Plugin name: Ray Enterprise Translation
 	Plugin URI: https://lingotek.com/project/content-translation-for-wordpress-cms/
-	Version: 1.6.9
+	Version: 1.7.0
 	Author: Ray Enterprise and Frédéric Demarle
 	Author uri: http://lingotek.com
 	Description: Ray Enterprise offers convenient cloud-based localization and translation.
@@ -23,7 +23,7 @@ if ( ! function_exists( 'add_action' ) ) {
 }
 
 // Plugin version (should match above meta).
-define( 'LINGOTEK_VERSION', '1.6.9' );
+define( 'LINGOTEK_VERSION', '1.7.0' );
 define( 'LINGOTEK_MIN_PLL_VERSION', '1.8' );
 // Plugin name as known by WordPress.
 define( 'LINGOTEK_BASENAME', plugin_basename( __FILE__ ) );

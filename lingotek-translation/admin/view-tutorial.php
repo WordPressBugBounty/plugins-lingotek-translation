@@ -45,14 +45,13 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 
 <?php
 	settings_errors();
-	$submenu  = isset( $_GET['sm'] ) ? sanitize_text_field( $_GET['sm'] ) : current( array_keys( $menu_items ) );
+	$allowed_menu_items = array_keys( $menu_items );
+    $submenu = isset( $_GET['sm'] ) ? sanitize_text_field( $_GET['sm'] ) : current( $allowed_menu_items );
 	$dir      = dirname( __FILE__ ) . '/tutorial/';
 	$filename = $dir . $submenu . '.php';
-if ( file_exists( $filename ) ) {
-	require $filename;
-} else {
-	echo 'TO-DO: create <i>' . esc_html( 'tutorial/' . $submenu . '.php' ) . '</i>';
-}
+	if ( in_array( $submenu, $allowed_menu_items, true ) && file_exists( $filename )) {
+        require $filename;
+    }
 ?>
 
 </div>

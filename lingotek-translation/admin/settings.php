@@ -52,10 +52,11 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 
 		<?php
 		settings_errors();
+		$allowed_menu_items = array_keys( $menu_items );
 		$submenu  = ! empty( $sm ) ? sanitize_text_field( $sm ) : 'account';
 		$dir      = dirname( __FILE__ ) . '/settings/';
 		$filename = $dir . 'view-' . $submenu . '.php';
-		if ( file_exists( $filename ) ) {
+		if ( in_array( $submenu, $allowed_menu_items, true ) && file_exists( $filename ) ) {
 			include $filename;
 		} else {
 			echo 'TO-DO: create <i>settings/view-' . esc_html( $submenu ) . '.php</i>';

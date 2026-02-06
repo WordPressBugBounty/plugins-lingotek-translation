@@ -50,10 +50,11 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 
 	<?php
 	settings_errors();
+	$allowed_menu_items = array_keys( $menu_items );
 	$submenu  = isset( $_GET['sm'] ) ? sanitize_text_field( $_GET['sm'] ) : 'content';
 	$dir      = dirname( __FILE__ ) . '/import/';
 	$filename = $dir . 'view-' . $submenu . '.php';
-	if ( file_exists( $filename ) ) {
+	if ( in_array( $submenu, $allowed_menu_items, true ) && file_exists( $filename ) ) {
 		require $filename;
 	} else {
 		echo 'TO-DO: create <i>' . esc_html( 'import/view-' . $submenu . '.php' ) . '</i>';

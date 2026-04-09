@@ -1,10 +1,10 @@
 === Ray Enterprise Translation ===
 Contributors: chouby, smithworx, erichie, robertdhanna, ipoulsen, elliothanna, lopez93, mbrown97, penyaskito
 Donate link: http://lingotek.com/
-Tags: automation, bilingual, international, language, Lingotek, localization, multilanguage, multilingual, translate, translation, Ray Enterprise
+Tags: bilingual, language, localization, multilanguage, translate
 Requires at least: 3.8
 Tested up to: 6.9
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -124,6 +124,13 @@ For more, visit the [Ray Enterprise documentation site](https://lingotek.atlassi
 5. The Ray Enterprise Translation plugin provides the ability to Copy, Translate, and Ignore each specific custom field. Our plugin supports Wordpress custom fields and advanced custom fields.
 
 == Changelog ==
+
+= 1.7.3 (2026-04-07) =
+  - Fixed PHP 8.2 fatal errors when used with Polylang 3.8+.
+  - Aligned method signatures in Lingotek_Filters_Columns with Polylang parent class.
+  - Fixed deprecated get_user_meta() usage causing count() warnings on PHP 8.
+  - Updated Lingotek_Table_String to support new Polylang languages API.
+  - Added early-return guard in Lingotek_Model constructor for missing Polylang global.
 
 = 1.7.2 (2026-01-28) =
   - Fixed additional LFI vulnerabilites

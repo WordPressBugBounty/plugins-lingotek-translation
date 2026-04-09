@@ -24,6 +24,9 @@ class Lingotek_Model {
 	 * @since 0.1
 	 */
 	public function __construct() {
+		if ( ! isset( $GLOBALS['polylang'] ) || ! is_object( $GLOBALS['polylang'] ) ) {
+			return;
+		}
 		$this->pllm = $GLOBALS['polylang']->model;
 
 		register_taxonomy(

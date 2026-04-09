@@ -69,16 +69,49 @@ class Lingotek_Filters_Term extends PLL_Admin_Filters_Term {
 			return;
 		}
 
-		$import_get  = filter_input( INPUT_GET, 'import' );
-		$import_post = filter_input( INPUT_POST, 'import' );
-		if ( empty( $import ) && empty( $import_post ) ) {
-			parent::save_term( $term_id, $tt_id, $taxonomy );
+		if ( ! $this->is_import_request() ) {
+			$this->save_parent_term( $term_id, $tt_id, $taxonomy );
 
-			if ( 'automatic' === Lingotek_Model::get_profile_option( 'upload', $taxonomy, PLL()->model->term->get_language( $term_id ) ) && $this->lgtm->can_upload( 'term', $term_id ) ) {
+			if ( $this->should_auto_upload_term( $taxonomy, $term_id ) ) {
 				$this->lgtm->upload_term( $term_id, $taxonomy );
-			} {
 			}
 		}
+	}
+
+	/**
+	 * Whether the current request is importing terms.
+	 *
+	 * @return bool
+	 */
+	protected function is_import_request() {
+		$import_get  = filter_input( INPUT_GET, 'import' );
+		$import_post = filter_input( INPUT_POST, 'import' );
+
+		return ! empty( $import_get ) || ! empty( $import_post );
+	}
+
+	/**
+	 * Delegates term saving to the Polylang parent implementation.
+	 *
+	 * @param int    $term_id Term ID.
+	 * @param int    $tt_id Term taxonomy ID.
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return void
+	 */
+	protected function save_parent_term( $term_id, $tt_id, $taxonomy ) {
+		parent::save_term( $term_id, $tt_id, $taxonomy );
+	}
+
+	/**
+	 * Whether saving the term should trigger an automatic upload.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param int    $term_id Term ID.
+	 * @return bool
+	 */
+	protected function should_auto_upload_term( $taxonomy, $term_id ) {
+		return 'automatic' === Lingotek_Model::get_profile_option( 'upload', $taxonomy, PLL()->model->term->get_language( $term_id ) )
+			&& $this->lgtm->can_upload( 'term', $term_id );
 	}
 
 	/**

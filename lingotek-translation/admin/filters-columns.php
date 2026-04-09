@@ -39,7 +39,7 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 * @param string $before the column before which we want to add our languages.
 	 * @return array modified list of columns
 	 */
-	protected function add_column( $columns, $before ) {
+	protected function add_column( array $columns, string $before ): array {
 		$n = array_search( $before, array_keys( $columns ), true );
 		if ( $n ) {
 			$end     = array_slice( $columns, $n );
@@ -50,14 +50,14 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 		$this->print_word_limit_error();
 		$columns ['lingotek_source']  = __( 'Lingotek source', 'lingotek-translation' );
 		$columns ['lingotek_targets'] = __( 'Lingotek translations', 'lingotek-translation' );
-        $current_user_id = get_current_user_id();
-        $post_hidden_columns = get_user_meta($current_user_id, 'manageedit-postcolumnshidden');
-        $post_languages = count($post_hidden_columns) === 1 ? $post_hidden_columns[0] : [];
-        $page_hidden_columns = get_user_meta($current_user_id, 'manageedit-pagecolumnshidden');
-        $page_languages = count($page_hidden_columns) === 1 ? $page_hidden_columns[0] : [];
+        $current_user_id     = get_current_user_id();
+        $post_languages      = get_user_meta( $current_user_id, 'manageedit-postcolumnshidden', true );
+        $page_languages      = get_user_meta( $current_user_id, 'manageedit-pagecolumnshidden', true );
+        $post_languages      = is_array( $post_languages ) ? $post_languages : array();
+        $page_languages      = is_array( $page_languages ) ? $page_languages : array();
 		foreach ( $this->model->get_languages_list() as $language ) {
-            $language_key = 'language_' . $language->locale;
-			$columns[ $language_key ] = $this->get_flag_html( $language ) . '<span class="screen-reader-text">' . esc_html( $language->name ) . '</span>';
+            $language_key = 'language_' . $language->slug;
+			$columns[ $language_key ] = $this->links->get_flag_html( $language ) . '<span class="screen-reader-text">' . esc_html( $language->name ) . '</span>';
             $is_pll_item = substr( $language_key, 0, 9 ) === "language_";
             if ($is_pll_item) {
                 if (!in_array($language_key, $post_languages)) {
@@ -273,7 +273,7 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 * @param string $column column name.
 	 * @param int    $post_id post id.
 	 */
-	public function post_column( $column, $post_id ) {
+	public function post_column( $column, $post_id ): void {
 		if ( false === strpos( $column, 'language_' ) && false === strpos( $column, 'lingotek_' ) ) {
 			return;
 		}
@@ -348,7 +348,7 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 */
 	public function term_column( $custom_data, $column, $term_id ) {
 		if ( false === strpos( $column, 'language_' ) ) {
-			return;
+			return $custom_data;
 		}
 		$allowed_html       = array(
 			'a'    => array(

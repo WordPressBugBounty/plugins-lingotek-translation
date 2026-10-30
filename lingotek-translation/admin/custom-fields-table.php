@@ -200,7 +200,8 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
         $this->screen->render_screen_reader_content( 'heading_pagination' );
     }
 
-    $output = '<span class="displaying-num">' . sprintf( esc_html( _n( '%s item', '%s items', $total_items ) ), esc_html( number_format_i18n( $total_items ) ) ) . '</span>';
+    /* translators: %s: number of items. */
+    $output = '<span class="displaying-num">' . sprintf( esc_html( _n( '%s item', '%s items', $total_items, 'lingotek-translation' ) ), esc_html( number_format_i18n( $total_items ) ) ) . '</span>';
 
     $current              = $this->get_pagenum();
     $removable_query_args = wp_removable_query_args();
@@ -241,7 +242,7 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
         $page_links[] = sprintf(
             "<a class='first-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
             esc_url( remove_query_arg( 'paged', $current_url ) ),
-            __( 'First page' ),
+            __( 'First page', 'lingotek-translation' ),
             '&laquo;'
         );
     }
@@ -252,23 +253,24 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
         $page_links[] = sprintf(
             "<a class='prev-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
             esc_url( add_query_arg( 'paged', max( 1, $current - 1 ), $current_url ) ),
-            __( 'Previous page' ),
+            __( 'Previous page', 'lingotek-translation' ),
             '&lsaquo;'
         );
     }
 
     if ( 'bottom' === $which ) {
         $html_current_page  = $current;
-        $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
+        $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page', 'lingotek-translation' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
     } else {
         $html_current_page = sprintf(
             "%s<input class='current-page' id='current-page-selector' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-            '<label for="current-page-selector" class="screen-reader-text">' . __( 'Current Page' ) . '</label>',
+            '<label for="current-page-selector" class="screen-reader-text">' . __( 'Current Page', 'lingotek-translation' ) . '</label>',
             $current,
             strlen( $total_pages )
         );
     }
     $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
+    /* translators: 1: current page, 2: total pages. */
     $page_links[]     = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'lingotek-translation' ), $html_current_page, $html_total_pages ) . $total_pages_after;
 
     if ( $disable_next ) {
@@ -277,7 +279,7 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
         $page_links[] = sprintf(
             "<a class='next-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
             esc_url( add_query_arg( 'paged', min( $total_pages, $current + 1 ), $current_url ) ),
-            __( 'Next page' ),
+            __( 'Next page', 'lingotek-translation' ),
             '&rsaquo;'
         );
     }
@@ -288,7 +290,7 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
         $page_links[] = sprintf(
             "<a class='last-page button' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
             esc_url( add_query_arg( 'paged', $total_pages, $current_url ) ),
-            __( 'Last page' ),
+            __( 'Last page', 'lingotek-translation' ),
             '&raquo;'
         );
     }
@@ -306,6 +308,6 @@ class Lingotek_Custom_Fields_Table extends WP_List_Table {
     }
 
     $this->_pagination = "<div class='tablenav-pages{$page_class}'>" . wp_kses_post( $output ) . "</div>";
-    echo $this->_pagination;
+    echo wp_kses_post( $this->_pagination );
 }
 }

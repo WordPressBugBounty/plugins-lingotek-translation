@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 ?>
 <h3><?php esc_html_e( 'String Groups', 'lingotek-translation' ); ?></h3>
 
-<p class="description"><?php printf( wp_kses_post( __( 'Manage group translation of system, widget, and plugin-specific strings. View individual strings on the <a href="%s"><b>Strings</b></a> page.', 'lingotek-translation' ) ), esc_url( 'admin.php?page=lingotek-translation_manage&sm=strings' ) ); ?></p>
+<p class="description"><?php /* translators: %s: URL of the Strings page. */ printf( wp_kses_post( __( 'Manage group translation of system, widget, and plugin-specific strings. View individual strings on the <a href="%s"><b>Strings</b></a> page.', 'lingotek-translation' ) ), esc_url( 'admin.php?page=lingotek-translation_manage&sm=strings' ) ); ?></p>
 <?php
 $profile = Lingotek_Model::get_profile( 'string', $this->pllm->get_language( $this->pllm->options['default_lang'] ) );
 
@@ -12,6 +12,7 @@ if ( 'disabled' == $profile['profile'] ) {
 	printf(
 		'<div class="error" style="border-left: 4px solid #ffba00;"><p>%s</p></div>',
 		sprintf(
+			/* translators: 1: opening link tag, 2: closing link tag. */
 			esc_html__( 'The strings translation is disabled in %1$sContent Type Configuration%2$s.', 'lingotek-translation' ),
 			'<a href="' . esc_url( admin_url( 'admin.php?page=lingotek-translation_manage&sm=content' ) ) . '">',
 			'</a>'

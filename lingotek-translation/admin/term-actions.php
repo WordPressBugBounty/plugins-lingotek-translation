@@ -16,8 +16,11 @@ class Lingotek_Term_actions extends Lingotek_Actions {
 	public function __construct() {
 		parent::__construct( 'term' );
 
-		foreach ( $this->pllm->get_translated_taxonomies() as $taxonomy ) {
-			add_filter( $taxonomy . '_row_actions', array( &$this, 'term_row_actions' ), 10, 2 );
+		// Lingotek actions are for Administrators only, so don't show them to other users.
+		if ( self::current_user_can_use_lingotek() ) {
+			foreach ( $this->pllm->get_translated_taxonomies() as $taxonomy ) {
+				add_filter( $taxonomy . '_row_actions', array( &$this, 'term_row_actions' ), 10, 2 );
+			}
 		}
 
 		// add_action('admin_footer-edit-tags.php', array(&$this, 'add_bulk_actions')); // FIXME admin_print_footer_scripts instead?
@@ -98,7 +101,7 @@ class Lingotek_Term_actions extends Lingotek_Actions {
 		}
 
         if ( ! current_user_can( 'manage_categories' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to manage categories.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to manage categories.', 'lingotek-translation' ) );
         }
 		// get the action
 		$wp_list_table = _get_list_table( 'WP_Terms_List_Table' );
@@ -107,6 +110,8 @@ class Lingotek_Term_actions extends Lingotek_Actions {
 		if ( empty( $action ) ) {
 			return;
 		}
+
+		$this->check_lingotek_action_permission( $action );
 
 		$redirect = remove_query_arg( array( 'action', 'action2', 'delete_tags' ), wp_get_referer() );
 		if ( ! $redirect ) {
@@ -190,7 +195,7 @@ class Lingotek_Term_actions extends Lingotek_Actions {
 				}
 		}//end switch
 
-		wp_redirect( $redirect );
+		wp_safe_redirect( $redirect );
 		exit();
 	}
 
@@ -202,7 +207,7 @@ class Lingotek_Term_actions extends Lingotek_Actions {
 	public function ajax_upload() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$id       = (int) absint( filter_input( INPUT_POST, 'id' ) );
 		$taxonomy = sanitize_text_field( filter_input( INPUT_POST, 'taxonomy' ) );

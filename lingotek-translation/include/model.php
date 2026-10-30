@@ -147,7 +147,12 @@ class Lingotek_Model {
 			return $document_id;
 		}
 
-		$terms = get_terms( array( 'post_translations', 'term_translations' ), array( 'slug' => $document_id ) );
+		$terms = get_terms(
+			array(
+				'taxonomy' => array( 'post_translations', 'term_translations' ),
+				'slug'     => $document_id,
+			)
+		);
 		return is_wp_error( $terms ) || empty( $terms ) ? false : $this->convert_term( reset( $terms ) );
 	}
 

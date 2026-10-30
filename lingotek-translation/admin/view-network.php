@@ -17,6 +17,10 @@ foreach ( $sites as $site ) {
 }
 
 if ( ! empty( $_POST ) ) {
+	check_admin_referer( 'lingotek_network_settings' );
+	if ( ! current_user_can( 'manage_network_options' ) ) {
+		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+	}
 	$source_site = sanitize_text_field( $_POST['source'] );
 
 	if ( isset( $_POST['destination'] ) ) {

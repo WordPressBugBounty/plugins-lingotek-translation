@@ -34,7 +34,7 @@ if ( empty( $_POST ) ) {
 	$content_types = get_option( 'lingotek_content_type' );
 } else {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
 	check_admin_referer( 'lingotek-content-types', '_wpnonce_lingotek-content-types' );
 

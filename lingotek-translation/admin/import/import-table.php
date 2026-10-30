@@ -446,7 +446,7 @@ class Lingotek_Import_Table extends WP_List_Table {
 		$result = null;
 		if ( 'import' === $this->current_action() ) {
             if ( ! current_user_can( 'import' ) ) {
-                wp_die( __( 'You do not have sufficient permissions to import documents.', 'lingotek-translation' ) );
+                wp_die( esc_html__( 'You do not have sufficient permissions to import documents.', 'lingotek-translation' ) );
             }
             check_admin_referer( 'bulk-import' );
 			// Bulk action.

@@ -93,7 +93,7 @@ if ( ! $community_id ) {
 	<td>
 		<?php
 		$confirm_message = __( 'Are you sure you would like to disconnect your Lingotek account? \n\nAfter disconnecting, you will need to re-connect an account to continue using Lingotek.', 'lingotek-translation' );
-		echo '<a class="button" href="' . esc_html( $redirect_url ) . '&delete_access_token=true" onclick="return confirm(\'' . esc_html( $confirm_message ) . '\')">' . esc_html( __( 'Disconnect', 'lingotek-translation' ) ) . '</a>';
+		echo '<a class="button" href="' . esc_html( $redirect_url ) . '&delete_access_token=true&_wpnonce=' . esc_attr( wp_create_nonce( 'lingotek-disconnect' ) ) . '" onclick="return confirm(\'' . esc_html( $confirm_message ) . '\')">' . esc_html( __( 'Disconnect', 'lingotek-translation' ) ) . '</a>';
 		?>
 	</td>
 	</tr>

@@ -2,9 +2,10 @@
 Contributors: chouby, smithworx, erichie, robertdhanna, ipoulsen, elliothanna, lopez93, mbrown97, penyaskito
 Donate link: http://lingotek.com/
 Tags: bilingual, language, localization, multilanguage, translate
-Requires at least: 3.8
-Tested up to: 6.9
-Stable tag: 1.7.3
+Requires at least: 6.5
+Requires PHP: 7.4
+Tested up to: 7.1
+Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -124,6 +125,14 @@ For more, visit the [Ray Enterprise documentation site](https://lingotek.atlassi
 5. The Ray Enterprise Translation plugin provides the ability to Copy, Translate, and Ignore each specific custom field. Our plugin supports Wordpress custom fields and advanced custom fields.
 
 == Changelog ==
+
+= 1.7.5 (2026-10-27) =
+  - Security: added nonce and capability checks to the API token and language AJAX endpoints (CVE-2026-14548, CVE-2026-14549). Thanks to Akshat Parikh for responsibly reporting these issues.
+  - Security: added capability checks to the status, upload and list-table Lingotek actions.
+  - Lingotek actions (upload, request, download, status, cancel and the translation profile meta box) now require an Administrator account. Other users no longer see the Lingotek columns, row actions or bulk actions, and see Polylang's standard language columns instead.
+
+= 1.7.4 (2026-10-27) =
+  - Fixed fatal error on the Posts, Pages and Media admin lists with Polylang 3.9+.
 
 = 1.7.3 (2026-04-07) =
   - Fixed PHP 8.2 fatal errors when used with Polylang 3.8+.

@@ -123,7 +123,7 @@ class Lingotek_String_actions extends Lingotek_Actions {
 				}
 		}//end switch
 
-		wp_redirect( $redirect );
+		wp_safe_redirect( $redirect );
 		exit();
 	}
 
@@ -134,6 +134,9 @@ class Lingotek_String_actions extends Lingotek_Actions {
 	 */
 	public function ajax_upload() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+		}
 		$this->lgtm->upload_strings( sanitize_text_field( filter_input( INPUT_POST, 'id' ) ) );
 		die();
 	}

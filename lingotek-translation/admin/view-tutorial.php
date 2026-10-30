@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 <div class="about-text"><?php printf( esc_html__( 'Thank you for updating! Ray Enterprise offers convenient cloud-based localization and translation.', 'lingotek-translation' ), esc_html( LINGOTEK_VERSION ) ); ?></div>
 
 
-<div class="wp-badge" style="background: url(<?php echo esc_url( LINGOTEK_URL ); ?>/img/rayEnterpriseIcon.svg) center 24px/85px 80px no-repeat #fff; color: #666;"><?php printf( esc_html__( 'Version %s', 'lingotek-translation' ), esc_html( LINGOTEK_VERSION ) ); ?></div>
+<div class="wp-badge" style="background: url(<?php echo esc_url( LINGOTEK_URL ); ?>/img/rayEnterpriseIcon.svg) center 24px/85px 80px no-repeat #fff; color: #666;"><?php /* translators: %s: plugin version. */ printf( esc_html__( 'Version %s', 'lingotek-translation' ), esc_html( LINGOTEK_VERSION ) ); ?></div>
 
 <h2 class="nav-tab-wrapper">
   <?php

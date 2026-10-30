@@ -8,7 +8,7 @@ $settings = $this->get_profiles_settings();
 
 if ( isset( $_GET['lingotek_action'] ) && 'delete-profile' == sanitize_text_field( $_GET['lingotek_action'] ) ) {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
 	check_admin_referer( 'delete-profile' );
 
@@ -18,14 +18,14 @@ if ( isset( $_GET['lingotek_action'] ) && 'delete-profile' == sanitize_text_fiel
 		update_option( 'lingotek_profiles', $profiles, false );
 		add_settings_error( 'lingotek_profile', 'default', __( 'Your translation profile was sucessfully deleted.', 'lingotek-translation' ), 'updated' );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
-		wp_redirect( admin_url( 'admin.php?page=lingotek-translation_manage&sm=profiles&settings-updated=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=lingotek-translation_manage&sm=profiles&settings-updated=1' ) );
 		exit;
 	}
 }
 
 if ( ! empty( $_POST ) ) {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
 	check_admin_referer( 'lingotek-edit-profile', '_wpnonce_lingotek-edit-profile' );
 
@@ -34,10 +34,10 @@ if ( ! empty( $_POST ) ) {
 	if ( empty( $_POST['name'] ) && empty( $_POST['profile'] ) ) {
 		add_settings_error( 'lingotek_profile', 'default', __( 'You must provide a name for your translation profile.', 'lingotek-translation' ), 'error' );
 	} else {
-		$profile_id                         = empty( $_POST['profile'] ) ? uniqid( rand() ) : sanitize_text_field( $_POST['profile'] );
+		$profile_id                         = empty( $_POST['profile'] ) ? uniqid( wp_rand() ) : sanitize_text_field( $_POST['profile'] );
 		$profiles[ $profile_id ]['profile'] = $profile_id;
 		if ( ! empty( $_POST['name'] ) ) {
-			$profiles[ $profile_id ]['name'] = sanitize_text_field( strip_tags( $_POST['name'] ) );
+			$profiles[ $profile_id ]['name'] = sanitize_text_field( wp_strip_all_tags( $_POST['name'] ) );
 		}
 
 		foreach ( array( 'upload', 'download', 'project_id', 'workflow_id', 'primary_filter_id', 'secondary_filter_id', 'author_email', 'author_name', 'division', 'unit', 'campaign_id', 'channel', 'contact_email', 'contact_name', 'description', 'domain', 'style_id', 'purchase_order', 'reference_url', 'region', 'require_review' ) as $key ) {

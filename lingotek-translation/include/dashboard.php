@@ -21,7 +21,22 @@ class Lingotek_Dashboard {
 	function ajax_language_dashboard() {
 		global $polylang;
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( null, 403 );
+		}
+
 		$request_method = isset( $_REQUEST['_method'] ) ? sanitize_text_field( $_REQUEST['_method'] ) : ( isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( $_SERVER['REQUEST_METHOD'] ) : 'GET' );
+
+		// Adding or removing languages changes the site configuration, so it requires a nonce.
+		if ( 'GET' !== $request_method ) {
+			$nonce = isset( $_SERVER['HTTP_X_CSRF_TOKEN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_CSRF_TOKEN'] ) ) : '';
+			if ( '' === $nonce && isset( $_REQUEST['_csrf_token'] ) ) {
+				$nonce = sanitize_text_field( wp_unslash( $_REQUEST['_csrf_token'] ) );
+			}
+			if ( ! wp_verify_nonce( $nonce, 'lingotek_language' ) ) {
+				wp_send_json_error( null, 403 );
+			}
+		}
 
 		$response = array(
 			'method' => $request_method,
@@ -29,7 +44,7 @@ class Lingotek_Dashboard {
 
 		switch ( $request_method ) {
 			case 'POST':
-				$locale_code = sanitize_lingotek_locale( $_REQUEST['code'] ?? '' );
+				$locale_code = isset( $_REQUEST['code'] ) && is_string( $_REQUEST['code'] ) ? sanitize_lingotek_locale( $_REQUEST['code'] ) : '';
 				$native = sanitize_text_field( $_REQUEST['native'] ?? '' );
 				$direction = sanitize_text_field($_REQUEST['direction'] ?? '');
 				if ( isset( $locale_code, $native, $direction ) && in_array( str_replace( '_', '-', $locale_code ?? ''), Lingotek::$lingotek_locales) ) {
@@ -72,7 +87,8 @@ class Lingotek_Dashboard {
                         'request' => 'POST: add target language to CMS and Lingotek Project Language',
                         'success' => false,
                         'message' => sprintf(
-                            __( 'Missing or unsupported locale, direction, or name. Locale: %s, Name: %s, Direction: %s', 'lingotek-translation' ),
+                            /* translators: 1: locale, 2: language name, 3: text direction. */
+                            __( 'Missing or unsupported locale, direction, or name. Locale: %1$s, Name: %2$s, Direction: %3$s', 'lingotek-translation' ),
                             esc_html( $locale_code ),
                             esc_html( $native ),
                             esc_html( $direction )
@@ -84,13 +100,21 @@ class Lingotek_Dashboard {
 				break;
 
 			case 'DELETE':
-				$body = file_get_contents( 'php://input' );
-				$code = str_replace( 'code=', '', $body ?? '');
+				// The body is form-encoded and may also carry the CSRF token, so parse it rather than strip "code=".
+				parse_str( (string) file_get_contents( 'php://input' ), $body );
+				$code = isset( $body['code'] ) && is_string( $body['code'] ) ? sanitize_lingotek_locale( $body['code'] ) : '';
 				// Map code to WP locales to find the language.
 				$lang = $polylang->model->get_language( Lingotek::map_to_wp_locale( $code ) );
 
-				// Prevents deleting the last language as it would break the Lingotek dashboard.
-				if ( 1 == count( $polylang->model->get_languages_list() ) ) {
+				if ( ! $lang ) {
+					$response = array(
+						'request' => sprintf( 'DELETE: remove language from CMS and project (%s)', $code ),
+						'code'    => $code,
+						'success' => false,
+					);
+					status_header( 404 );
+				} elseif ( 1 == count( $polylang->model->get_languages_list() ) ) {
+					// Prevents deleting the last language as it would break the Lingotek dashboard.
 					$response = array(
 						'request' => sprintf( 'DELETE: remove language from CMS and project (%s)', $code ),
 						'code'    => $code,

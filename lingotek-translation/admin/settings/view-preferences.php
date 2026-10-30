@@ -76,7 +76,7 @@ $page_key = $this->plugin_slug . '_settings&sm=preferences';
 
 if ( ! empty( $_POST ) ) {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
     check_admin_referer( $page_key, '_wpnonce_' . $page_key );
 	$options = array();

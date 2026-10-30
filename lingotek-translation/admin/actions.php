@@ -752,6 +752,7 @@ abstract class Lingotek_Actions {
 			if ( isset( $action_data['per_locale'] ) && true === $action_data['per_locale'] ) {
 				foreach ( PLL()->model->get_languages_list() as $language ) {
                     $bulk_actions[ 'bulk-lingotek-' . $action . ':' . $language->locale ] = sprintf(
+                        /* translators: 1: bulk action name, 2: language name. */
                         __( '%1$s for %2$s', 'lingotek-translation' ),
                         $action_data['action'],
                         $language->lingotek_locale
@@ -801,6 +802,34 @@ abstract class Lingotek_Actions {
 	}
 
 	/**
+	 * Whether the current user may see and run Lingotek actions (Administrators only).
+	 *
+	 * @since 1.7.5
+	 *
+	 * @return bool
+	 */
+	public static function current_user_can_use_lingotek() {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Stops the request unless the current user may run Lingotek list-table actions.
+	 *
+	 * The load-edit.php, load-upload.php and load-edit-tags.php hooks that run these actions
+	 * fire before WordPress checks the list table's own capability.
+	 *
+	 * @since 1.7.5
+	 *
+	 * @param string $action Action name, without the ":locale" suffix.
+	 */
+	protected function check_lingotek_action_permission( $action ) {
+		$is_lingotek_action = 0 === strpos( $action, 'lingotek-' ) || 0 === strpos( $action, 'bulk-lingotek-' ) || 'lock-target' === $action;
+		if ( $is_lingotek_action && ! self::current_user_can_use_lingotek() ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+		}
+	}
+
+	/**
 	 * Manages actions driven by document_id
 	 *
 	 * @since 0.2
@@ -809,6 +838,8 @@ abstract class Lingotek_Actions {
 	 * @return bool True if the action was managed, false otherwise.
 	 */
 	protected function _manage_actions( $action ) {
+		$this->check_lingotek_action_permission( $action );
+
 		if ( null !== filter_input( INPUT_GET, 'document_id' ) ) {
 			$document_id = sanitize_key(filter_input( INPUT_GET, 'document_id' ));
 			$document    = $this->lgtm->get_group_by_id( $document_id );
@@ -923,7 +954,7 @@ abstract class Lingotek_Actions {
 	public function ajax_download() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$document = $this->lgtm->get_group( $this->type, sanitize_key( filter_input( INPUT_POST, 'id' ) ) );
 		if ( $document ) {
@@ -944,7 +975,7 @@ abstract class Lingotek_Actions {
 	public function ajax_request() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$document = $this->lgtm->get_group( $this->type, sanitize_text_field( filter_input( INPUT_POST, 'id' ) ) );
 		if ( $document ) {
@@ -961,7 +992,7 @@ abstract class Lingotek_Actions {
 	public function ajax_status() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$document = $this->lgtm->get_group( $this->type, sanitize_text_field( filter_input( INPUT_POST, 'id' ) ) );
 		if ( $document ) {
@@ -979,7 +1010,7 @@ abstract class Lingotek_Actions {
 	public function ajax_delete() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$id       = sanitize_key( filter_input( INPUT_POST, 'id' ) );
 		$language = PLL()->model->post->get_language( $id );
@@ -1003,7 +1034,7 @@ abstract class Lingotek_Actions {
 	public function ajax_cancel() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$id       = sanitize_key( filter_input( INPUT_POST, 'id' ) );
 		$language = PLL()->model->post->get_language( $id );
@@ -1026,7 +1057,7 @@ abstract class Lingotek_Actions {
 	public function ajax_cancel_translation() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$id            = sanitize_key( filter_input( INPUT_POST, 'id' ) );
 		$target_locale = sanitize_lingotek_locale( filter_input( INPUT_POST, 'target_locale' ) );
@@ -1043,7 +1074,7 @@ abstract class Lingotek_Actions {
 	public function ajax_estimate_cost() {
 		check_ajax_referer( 'lingotek_professional', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$document_id   = sanitize_key( filter_input( INPUT_GET, 'document_id' ) );
 		$locale        = sanitize_lingotek_locale( filter_input( INPUT_GET, 'locale' ) );
@@ -1060,7 +1091,7 @@ abstract class Lingotek_Actions {
 	public function ajax_request_professional_translation() {
 		check_ajax_referer( 'lingotek_professional', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$post_vars = filter_input_array( INPUT_POST );
 		$client    = new Lingotek_API();
@@ -1086,7 +1117,7 @@ abstract class Lingotek_Actions {
 	public function ajax_get_ltk_terms_and_conditions() {
 		check_ajax_referer( 'lingotek_professional', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$client = new Lingotek_API();
 		echo wp_json_encode( $client->get_lingotek_terms_and_conditions() );
@@ -1096,7 +1127,7 @@ abstract class Lingotek_Actions {
 	public function ajax_get_user_payment_information() {
 		check_ajax_referer( 'lingotek_professional', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		$client   = new Lingotek_API();
 		$response = $client->get_user_payment_information();

@@ -27,7 +27,7 @@ $custom_field_choices = get_option( 'lingotek_custom_fields', array() );
 
 if ( ! empty( $_POST ) ) {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
 	check_admin_referer( 'lingotek-custom-fields', '_wpnonce_lingotek-custom-fields' );
 	$action =  isset($_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) : '';

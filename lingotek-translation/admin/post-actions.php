@@ -16,6 +16,16 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 	public function __construct() {
 		parent::__construct( 'post' );
 
+		// manage bulk actions, row actions and icon actions; non-admins get a 403 from manage_actions().
+		add_action( 'load-edit.php', array( &$this, 'manage_actions' ) );
+		add_action( 'load-upload.php', array( &$this, 'manage_actions' ) );
+		add_action( 'save_post', array( &$this, 'lingotek_save_meta_boxes' ) );
+
+		// Lingotek actions are for Administrators only, so don't show them to other users.
+		if ( ! self::current_user_can_use_lingotek() ) {
+			return;
+		}
+
 		// Row actions.
 		add_filter( 'post_row_actions', array( &$this, 'post_row_actions' ), 10, 2 );
 		// Hierarchical post types.
@@ -38,16 +48,11 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 		foreach ( $polylang_enabled as $type ) {
 			add_filter( "bulk_actions-edit-$type", array( &$this, 'add_bulk_actions' ) );
 		}
-		// manage bulk actions, row actions and icon actions.
-		add_action( 'load-edit.php', array( &$this, 'manage_actions' ) );
-		add_action( 'load-upload.php', array( &$this, 'manage_actions' ) );
-
 		// handle promotional banner
 		add_action( 'load-edit.php', array( &$this, 'manage_promotions' ) );
 
 		// add meta box on post and page edit pages, and hook on save.
 		add_action( 'add_meta_boxes', array( &$this, 'lingotek_add_meta_boxes' ) );
-		add_action( 'save_post', array( &$this, 'lingotek_save_meta_boxes' ) );
 	}
 
 	/**
@@ -145,8 +150,9 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 		}
 
 		// get the action.
-		// $typenow is empty for media.
-		$wp_list_table = _get_list_table( empty( $typenow ) ? 'WP_Media_List_Table' : 'WP_Posts_List_Table' );
+		// $typenow is 'attachment' (not empty) on upload.php, so decide by the screen being loaded.
+		$is_media      = 'attachment' === $post_type;
+		$wp_list_table = _get_list_table( $is_media ? 'WP_Media_List_Table' : 'WP_Posts_List_Table' );
 		$action        = $wp_list_table->current_action();
 
 		if ( empty( $action ) ) {
@@ -155,16 +161,20 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 
 		$redirect = remove_query_arg( array( 'action', 'action2', 'tags_input', 'post_author', 'comment_status', 'ping_status', '_status', 'post', 'bulk_edit', 'post_view' ), wp_get_referer() );
 		if ( ! $redirect ) {
-			$redirect = admin_url( "edit.php?post_type=$typenow" );
+			$redirect = $is_media ? admin_url( 'upload.php' ) : admin_url( "edit.php?post_type=$typenow" );
 		}
 
 		if ( false !== strpos( $action, ':' ) ) {
 			list( $action, $locale ) = explode( ':', $action, 2 );
 		}
+
+		$this->check_lingotek_action_permission( $action );
+
 		switch ( $action ) {
 			case 'bulk-lingotek-lock-target':
+				$is_media ? check_admin_referer( 'bulk-media' ) : check_admin_referer( 'bulk-posts' );
 				if ( empty( $post_ids ) ) {
-					$type         = empty( $typenow ) ? 'media' : 'post';
+					$type         = $is_media ? 'media' : 'post';
 					$filtered_get = filter_input_array( INPUT_GET );
 					if ( ! isset( $filtered_get[ $type ] ) ) {
 						return;
@@ -182,7 +192,7 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 				}
 				break;
 			case 'bulk-lingotek-upload':
-				$type         = empty( $typenow ) ? 'media' : 'post';
+				$type         = $is_media ? 'media' : 'post';
 				$filtered_get = filter_input_array( INPUT_GET );
 				if ( ! isset( $filtered_get[ $type ] ) ) {
 					return;
@@ -222,7 +232,7 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 			case 'bulk-lingotek-cancel':
 			case 'bulk-lingotek-cancel-translation':
 				if ( empty( $post_ids ) ) {
-					$type         = empty( $typenow ) ? 'media' : 'post';
+					$type         = $is_media ? 'media' : 'post';
 					$filtered_get = filter_input_array( INPUT_GET );
 					if ( ! isset( $filtered_get[ $type ] ) ) {
 						return;
@@ -231,7 +241,7 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 					$post_ids = array_map( 'intval', $filtered_get[ $type ] );
 				}
 
-				empty( $typenow ) ? check_admin_referer( 'bulk-media' ) : check_admin_referer( 'bulk-posts' );
+				$is_media ? check_admin_referer( 'bulk-media' ) : check_admin_referer( 'bulk-posts' );
 				if ( in_array( $action, array( 'bulk-lingotek-cancel', 'bulk-lingotek-delete' ), true ) && ! $locale ) {
 					$redirect = add_query_arg( 'lingotek_remove', 1, $redirect );
 				}
@@ -277,6 +287,9 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 	 */
 	public function ajax_upload() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+		}
 		$id         = (int) absint( filter_input( INPUT_POST, 'id' ) );
 		$wp_locales = json_decode( filter_input( INPUT_POST, 'locales' ) );
 		if ( isset( $wp_locales ) ) {
@@ -330,6 +343,7 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 	 */
 	public static function lingotek_edit_meta_box_html() {
 		wp_enqueue_script( 'lingotek_defaults', LINGOTEK_URL . '/js/defaults.js', array(), LINGOTEK_VERSION, false );
+		wp_nonce_field( 'lingotek_profile_meta', '_lingotek_profile_nonce' );
 
 		global $post;
 		$post_type         = get_post_type( $post->ID );
@@ -397,6 +411,10 @@ class Lingotek_Post_Actions extends Lingotek_Actions {
 
 	public function lingotek_save_meta_boxes() {
 		if ( null === filter_input( INPUT_POST, 'lingotek_profile_meta' ) ) {
+			return;
+		}
+		$nonce = filter_input( INPUT_POST, '_lingotek_profile_nonce' );
+		if ( ! self::current_user_can_use_lingotek() || ! $nonce || ! wp_verify_nonce( sanitize_key( $nonce ), 'lingotek_profile_meta' ) ) {
 			return;
 		}
 

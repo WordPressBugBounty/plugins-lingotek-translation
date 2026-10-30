@@ -2,7 +2,7 @@
 /**
 	Plugin name: Ray Enterprise Translation
 	Plugin URI: https://lingotek.com/project/content-translation-for-wordpress-cms/
-	Version: 1.7.3
+	Version: 1.7.5
 	Author: Ray Enterprise and Frédéric Demarle
 	Author uri: http://lingotek.com
 	Description: Ray Enterprise offers convenient cloud-based localization and translation.
@@ -23,8 +23,8 @@ if ( ! function_exists( 'add_action' ) ) {
 }
 
 // Plugin version (should match above meta).
-define( 'LINGOTEK_VERSION', '1.7.3' );
-define( 'LINGOTEK_MIN_PLL_VERSION', '1.8' );
+define( 'LINGOTEK_VERSION', '1.7.5' );
+define( 'LINGOTEK_MIN_PLL_VERSION', '3.8' );
 // Plugin name as known by WordPress.
 define( 'LINGOTEK_BASENAME', plugin_basename( __FILE__ ) );
 // plugin slug (should match above meta: Text Domain).
@@ -340,7 +340,7 @@ class Lingotek {
 
 		$buttons = array(
 			array(
-				'label' => __( 'Close' ),
+				'label' => __( 'Close', 'lingotek-translation' ),
 			),
 		);
 
@@ -793,6 +793,7 @@ class Lingotek {
 		printf(
 			'<div class="error"><p>%s</p></div>',
 			sprintf(
+				/* translators: %s: minimum required Polylang version. */
 				esc_html( __( 'Ray Enterprise Translation requires Polylang %s to work. Please upgrade Polylang.', 'lingotek-translation' ) ),
 				wp_kses( '<strong>' . LINGOTEK_MIN_PLL_VERSION . '</strong>', $allowed_html )
 			)
@@ -963,7 +964,7 @@ class Lingotek {
 
 		$buttons = array(
 			array(
-				'label' => __( 'Close' ),
+				'label' => __( 'Close', 'lingotek-translation' ),
 			),
 			array(
 				'label' => __( 'Activate Account', 'lingotek-translation' ),
@@ -992,7 +993,7 @@ class Lingotek {
 
 		$buttons = array(
 			array(
-				'label' => __( 'Close' ),
+				'label' => __( 'Close', 'lingotek-translation' ),
 			),
 			array(
 				'label' => __( 'Learn More', 'lingotek-translation' ),

@@ -107,7 +107,15 @@ class Lingotek_Strings_Table extends WP_List_Table {
 		if ( $language_only === $this->get_first_language_column() ) {
 			if ( isset( $errors[ $item['context'] ] ) ) {
 				$api_error = Lingotek_Actions::retrieve_api_error( $errors[ $item['context'] ] );
-				echo Lingotek_Actions::display_error_icon( 'error', $api_error );
+				echo wp_kses(
+					Lingotek_Actions::display_error_icon( 'error', $api_error ),
+					array(
+						'span' => array(
+							'class' => array(),
+							'title' => array(),
+						),
+					)
+				);
 			}
 		}
 	}

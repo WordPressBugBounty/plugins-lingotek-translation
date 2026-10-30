@@ -29,9 +29,8 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	}
 
 	/**
-	 * Adds languages and translations columns in posts, pages, media, categories and tags tables
-	 * overrides Polylang method to display all languages including the filtered one
-	 * as well as displaying a tooltip with the language name and locale when there is no flag
+	 * Adds languages and translations columns in posts, pages, media, categories and tags tables.
+	 * Inserts the Lingotek columns, then lets Polylang add its own language columns.
 	 *
 	 * @since 0.2
 	 *
@@ -40,6 +39,10 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 * @return array modified list of columns
 	 */
 	protected function add_column( array $columns, string $before ): array {
+		// Non-admins can't use Lingotek actions, so they get Polylang's standard language columns.
+		if ( ! Lingotek_Actions::current_user_can_use_lingotek() ) {
+			return parent::add_column( $columns, $before );
+		}
 		$n = array_search( $before, array_keys( $columns ), true );
 		if ( $n ) {
 			$end     = array_slice( $columns, $n );
@@ -50,6 +53,8 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 		$this->print_word_limit_error();
 		$columns ['lingotek_source']  = __( 'Lingotek source', 'lingotek-translation' );
 		$columns ['lingotek_targets'] = __( 'Lingotek translations', 'lingotek-translation' );
+		$columns = isset( $end ) ? array_merge( $columns, $end ) : $columns;
+
         $current_user_id     = get_current_user_id();
         $post_languages      = get_user_meta( $current_user_id, 'manageedit-postcolumnshidden', true );
         $page_languages      = get_user_meta( $current_user_id, 'manageedit-pagecolumnshidden', true );
@@ -57,21 +62,18 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
         $page_languages      = is_array( $page_languages ) ? $page_languages : array();
 		foreach ( $this->model->get_languages_list() as $language ) {
             $language_key = 'language_' . $language->slug;
-			$columns[ $language_key ] = $this->links->get_flag_html( $language ) . '<span class="screen-reader-text">' . esc_html( $language->name ) . '</span>';
-            $is_pll_item = substr( $language_key, 0, 9 ) === "language_";
-            if ($is_pll_item) {
-                if (!in_array($language_key, $post_languages)) {
-                    $post_languages[] = $language_key;
-                }
-                if (!in_array($language_key, $page_languages)) {
-                    $page_languages[] = $language_key;
-                }
+            if (!in_array($language_key, $post_languages)) {
+                $post_languages[] = $language_key;
+            }
+            if (!in_array($language_key, $page_languages)) {
+                $page_languages[] = $language_key;
             }
 		}
         update_user_meta($current_user_id,'manageedit-postcolumnshidden', $post_languages);
         update_user_meta($current_user_id,'manageedit-pagecolumnshidden', $page_languages);
 
-		return isset( $end ) ? array_merge( $columns, $end ) : $columns;
+		// Let Polylang add its own language (flag) columns before $before, so we don't depend on its flag API.
+		return parent::add_column( $columns, $before );
 	}
 
 	private function print_cancel_error() {
@@ -274,6 +276,10 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 * @param int    $post_id post id.
 	 */
 	public function post_column( $column, $post_id ): void {
+		if ( ! Lingotek_Actions::current_user_can_use_lingotek() ) {
+			parent::post_column( $column, $post_id );
+			return;
+		}
 		if ( false === strpos( $column, 'language_' ) && false === strpos( $column, 'lingotek_' ) ) {
 			return;
 		}
@@ -347,6 +353,9 @@ class Lingotek_Filters_Columns extends PLL_Admin_Filters_Columns {
 	 * @param int    $term_id term id.
 	 */
 	public function term_column( $custom_data, $column, $term_id ) {
+		if ( ! Lingotek_Actions::current_user_can_use_lingotek() ) {
+			return parent::term_column( $custom_data, $column, $term_id );
+		}
 		if ( false === strpos( $column, 'language_' ) ) {
 			return $custom_data;
 		}

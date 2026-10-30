@@ -23,6 +23,7 @@ jQuery(document).ready(function ($) {
 				console.log(redirect_url);
 				var request_data = {
             		'action': 'lingotek_authorization_action',
+            		'_lingotek_nonce': '<?php echo esc_js( wp_create_nonce( 'lingotek_authorization' ) ); ?>',
         		}
 				$.ajax({
             	type: 'POST',

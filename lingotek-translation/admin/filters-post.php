@@ -200,7 +200,7 @@ class Lingotek_Filters_Post extends PLL_CRUD_Posts {
 				}
 			}
 			// Ensures languages are updated, even when no other element on the page has been changed.
-			if ( isset( $_POST['post_tr_lang'] ) ) {
+			if ( isset( $_POST['post_tr_lang'], $_POST['_pll_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_pll_nonce'] ) ), 'pll_language' ) ) {
 				PLL()->model->post->save_translations( $post_id, array_map( 'absint', $_POST['post_tr_lang'] ) );
 			}
 		}

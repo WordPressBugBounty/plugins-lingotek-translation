@@ -143,6 +143,7 @@ class Lingotek_API extends Lingotek_HTTP {
 		);
 		$this->format_as_multipart( $args );
 		$response = $this->post( $this->api_url . '/document', $args );
+		/* translators: %1$s: WordPress item ID. */
 		$this->update_lingotek_error_option( $response, $wp_id, 'upload_document', sprintf( __( 'There was an error uploading WordPress item %1$s', 'lingotek-translation' ), $wp_id ) );
 		$code = wp_remote_retrieve_response_code( $response );
 		if ( ! is_wp_error( $response ) && 202 == $code ) {
@@ -160,6 +161,7 @@ class Lingotek_API extends Lingotek_HTTP {
 			$error_message                               = $this->get_error_message_from_response( $response ) !== false ?
 			$this->get_error_message_from_response( $response ) : 'No error message set by Lingotek';
 			$lingotek_log_errors['patch_document_error'] = sprintf(
+				/* translators: %s: error message returned by the Ray Enterprise API. */
 				__("Payment required. Message: %s", 'lingotek-translation'),
                 esc_html($error_message)
 			);
@@ -309,12 +311,14 @@ class Lingotek_API extends Lingotek_HTTP {
 
 		if ( $status_code == 402 ) {
 			$lingotek_log_errors['patch_document_error'] = sprintf(
+				/* translators: %s: error message returned by the Ray Enterprise API. */
 				__("Payment required. Message: %s", 'lingotek-translation'),
                 esc_html($error_message)
 			);
 		} else {
 			$lingotek_log_errors['patch_document_error'] = sprintf(
-				__("Error occurred while updating document %s. Message: %s", 'lingotek-translation'),
+				/* translators: 1: document title, 2: error message returned by the Ray Enterprise API. */
+				__( 'Error occurred while updating document %1$s. Message: %2$s', 'lingotek-translation' ),
 				$title,
 				$error_message
 			);
@@ -567,6 +571,7 @@ class Lingotek_API extends Lingotek_HTTP {
 			$response,
 			$wp_id,
 			'get_translations_status',
+			/* translators: %1$s: WordPress item ID. */
 			sprintf( __( 'There was an error updating the translations status for WordPress item %1$s', 'lingotek-translation' ), $wp_id ),
 			array( 'document_id' => $doc_id )
 		);
@@ -835,6 +840,7 @@ class Lingotek_API extends Lingotek_HTTP {
 				$arr[ $wp_id ]['wp_error'] = __( 'Make sure you have internet connectivity', 'lingotek-translation' );
 			} elseif ( 400 == $status_code ) {
 				$arr[ $wp_id ]['request_translation'][ $lingotek_locale ] = sprintf(
+					/* translators: 1: Ray Enterprise locale, 2: WordPress item ID. */
 					__( 'There was an error requesting translation %1$s for WordPress item %2$s', 'lingotek-translation' ),
 					$lingotek_locale,
 					$wp_id
@@ -887,6 +893,7 @@ class Lingotek_API extends Lingotek_HTTP {
 				$document->source_failed();
 				//TODO IS THIS SETTING ERROR PROPERLY?
                 $arr[ $wp_id ]['wp_error'] = sprintf(
+                    /* translators: %s: Ray Enterprise document ID. */
                     __( 'Document %s has been archived. Please re-upload source', 'lingotek-translation' ),
                     esc_html( $doc_id )
                 );
@@ -903,6 +910,7 @@ class Lingotek_API extends Lingotek_HTTP {
 				$arr[ $wp_id ]['wp_error'] = __( 'Make sure you have internet connectivity', 'lingotek-translation' );
 			} elseif ( 400 == $status_code || 404 == $status_code ) {
 				$arr[ $wp_id ]['get_translation'][ $locale ] = sprintf(
+					/* translators: 1: locale, 2: WordPress item ID. */
 					__( 'There was an error downloading translation %1$s for WordPress item %2$s', 'lingotek-translation' ),
 					$locale,
 					$wp_id

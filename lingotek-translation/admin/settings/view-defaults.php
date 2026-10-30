@@ -16,7 +16,7 @@ wp_add_inline_script( 'defaults', $inline_script );
 
 if ( ! empty( $_POST ) ) {
     if ( ! current_user_can( 'manage_options' ) ) {
-        wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+        wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
     }
 	check_admin_referer( $page_key, '_wpnonce_' . $page_key );
 	$refresh = sanitize_text_field(filter_input(INPUT_POST, 'refresh', ));

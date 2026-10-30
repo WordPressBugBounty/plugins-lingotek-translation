@@ -5,7 +5,7 @@ jQuery(document).ready(function($) {
     }
   });
   var current_ids = {};
-  var post_data = {"check_ids" : current_ids};
+  var post_data = {"check_ids" : current_ids, "_lingotek_nonce" : updater_data.nonce};
   var url = window.location.href;
   var end = url.indexOf('wp-admin') + 'wp-admin'.length;
   var relative_url = url.substring(0,end);
@@ -29,7 +29,7 @@ jQuery(document).ready(function($) {
 
   var interval = updater_data.interval === undefined ? 10 : updater_data.interval;
   if (interval > 0) {
-    setInterval(function() {
+    var poller = setInterval(function() {
       var rows = $('#the-list').find('tr');
       $(rows).each(function() {
         if($(this).attr('id') && $(this).attr('id').length > 1) {
@@ -44,8 +44,18 @@ jQuery(document).ready(function($) {
         data: post_data,
         dataType: 'json',
         success: function (data) {
-          if (data !== null) {
+          if (data !== null && typeof data === 'object') {
+            // Each response carries a fresh nonce for the next poll.
+            if (data.updater_nonce) {
+              post_data['_lingotek_nonce'] = data.updater_nonce;
+            }
             update_indicators(data);
+          }
+        },
+        error: function (xhr) {
+          // Nonce expired (e.g. after the computer slept) or no permission: stop polling until the page is reloaded.
+          if (xhr.status === 403) {
+            clearInterval(poller);
           }
         }
       });

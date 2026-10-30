@@ -94,8 +94,8 @@ foreach ( $settings as $key => $setting ) {
 		<?php
 		printf( '<select name="%1$s" id="%1$s" %2$s>', esc_attr( $key ), in_array( $key, array( 'upload', 'download' ) ) ? esc_attr( $disabled ) : '' );
 		foreach ( $setting['options'] as $option_id => $option_title ) {
-			$selected = isset( $profile[ $key ] ) && $profile[ $key ] == $option_id ? 'selected="selected"' : '';
-			echo "\n\t<option value='" . esc_attr( $option_id ) . "' $selected>" . esc_html( $option_title ) . '</option>';
+			$selected = isset( $profile[ $key ] ) && $profile[ $key ] == $option_id;
+			echo "\n\t<option value='" . esc_attr( $option_id ) . "'" . selected( $selected, true, false ) . '>' . esc_html( $option_title ) . '</option>';
 		}
 		?>
 			</select>
@@ -221,8 +221,8 @@ foreach ( $settings as $key => $setting ) {
 				)
 			);
 		foreach ( $target_settings as $target_id => $target_title ) {
-			$selected = ( empty( $profile['targets'][ $language->slug ] ) && 'default' === $target_id ) || ( isset( $profile['targets'][ $language->slug ] ) && $profile['targets'][ $language->slug ] === $target_id ) ? 'selected="selected"' : '';
-			echo "\n\t<option value='" . esc_attr( $target_id ) . "' $selected>" . esc_html( $target_title ) . '</option>';
+			$selected = ( empty( $profile['targets'][ $language->slug ] ) && 'default' === $target_id ) || ( isset( $profile['targets'][ $language->slug ] ) && $profile['targets'][ $language->slug ] === $target_id );
+			echo "\n\t<option value='" . esc_attr( $target_id ) . "'" . selected( $selected, true, false ) . '>' . esc_html( $target_title ) . '</option>';
 		}
 		?>
 			</select>
@@ -270,8 +270,8 @@ foreach ( $settings as $key => $setting ) {
 							if ( 'default' === $option_id && 'workflow_id' === $key ) {
 								$option_id = $defaults['workflow_id'];
 							}
-							$selected = isset( $profile['custom'][ $key ][ $language->slug ] ) && $profile['custom'][ $key ][ $language->slug ] == $option_id ? 'selected="selected"' : '';
-							echo "\n\t<option value='" . esc_attr( $option_id ) . "' $selected>" . esc_html( $option_title ) . '</option>';
+							$selected = isset( $profile['custom'][ $key ][ $language->slug ] ) && $profile['custom'][ $key ][ $language->slug ] == $option_id;
+							echo "\n\t<option value='" . esc_attr( $option_id ) . "'" . selected( $selected, true, false ) . '>' . esc_html( $option_title ) . '</option>';
 						}
 						?>
 							</select>
@@ -305,11 +305,8 @@ foreach ( $settings as $key => $setting ) {
 		<input type="checkbox" name="target_select_all" id="target_select_all" onchange="<?php echo esc_attr( esc_js( $select_all_on_change ) ); ?>">
 		<label for="target_select_all"><?php esc_html_e( 'Select All', 'lingotek-translation' ); ?></label></td>
 	</tr>
-	<?php
-	$target_warning = $custom_profile_chosen ? '' : 'style="display:none"';
-	?>
 	<tr>
-		<td colspan="3"><span id='target_warning' <?php echo $target_warning; ?>><b>Note:</b> If any targets are selected to be uploaded and at the same time a custom workflow is selected
+		<td colspan="3"><span id='target_warning' <?php echo $custom_profile_chosen ? '' : 'style="display:none"'; ?>><b>Note:</b> If any targets are selected to be uploaded and at the same time a custom workflow is selected
 		for any of them, all targets to be uploaded must have a non-project-default workflow selected.</span></td>
 	</tr>
 </table>

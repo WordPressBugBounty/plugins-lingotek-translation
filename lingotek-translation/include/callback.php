@@ -89,16 +89,16 @@ class Lingotek_Callback {
 			// posts
 			if ( post_type_exists( $document->type ) ) {
 				if ( $id = PLL()->model->post->get( $document->source, $locale ) ) {
-					wp_redirect( get_permalink( $id ), 301 );
+					wp_safe_redirect( get_permalink( $id ), 301 );
 					exit();
 				} else {
-					wp_redirect( get_permalink( $document->source ), 302 );
+					wp_safe_redirect( get_permalink( $document->source ), 302 );
 					exit();
 				}
 			}
 			// taxonomy terms
 			elseif ( taxonomy_exists( $document->type ) && $id = $document->pllm->get_term( $document->source, $locale ) ) {
-				wp_redirect( get_term_link( $id, $document->type ), 301 );
+				wp_safe_redirect( get_term_link( $id, $document->type ), 301 );
 				exit();
 			}
 

@@ -153,7 +153,7 @@ class Lingotek_Utilities {
 	public function ajax_utility_disassociate() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		if ( $group = $this->lgtm->get_group_by_id( sanitize_key( $_POST['id'] ) ) ) {
 			$group->delete( 'lingotek_progress_disassociate_and_delete' == sanitize_text_field( $_POST['action'] ) );
@@ -164,7 +164,7 @@ class Lingotek_Utilities {
 	public function ajax_utility_cancel() {
 		check_ajax_referer( 'lingotek_progress', '_lingotek_nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( __( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ) );
         }
 		if ( $group = $this->lgtm->get_group_by_id( sanitize_key( $_POST['id'] ) ) ) {
 			$group->cancel( 'lingotek_progress_cancel' == sanitize_text_field( $_POST['action'] ) );

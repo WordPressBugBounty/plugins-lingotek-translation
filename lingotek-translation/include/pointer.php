@@ -70,42 +70,41 @@ class Lingotek_Pointer {
 			foreach ( $this->args['buttons'] as $button ) {
 				$b .= sprintf(
 					"
-					$('<a>').addClass('%s').html('%s').css('margin-left', '10px').click(function() {
+					$('<a>').addClass('%s').html(%s).css('margin-left', '10px').click(function() {
 						$.post(ajaxurl, {
-							pointer: '%s',
+							pointer: %s,
 							action: 'dismiss-wp-pointer'
 						}, function(response) {
 							%s
 						});
 					}).appendTo(buttons);",
 					empty( $button['link'] ) ? 'button' : 'button button-primary',
-					$button['label'],
-					$this->args['pointer'],
-					empty( $button['link'] ) ? "pointer.pointer('close')" : sprintf( "location.href = '%s'", $button['link'] )
+					wp_json_encode( esc_html( $button['label'] ) ),
+					wp_json_encode( $this->args['pointer'] ),
+					empty( $button['link'] ) ? "pointer.pointer('close')" : sprintf( 'location.href = %s', wp_json_encode( esc_url_raw( $button['link'] ) ) )
 				);
 			}
 		}//end if
 
+		// Every dynamic value is escaped above or JSON-encoded here; WordPress prints the script tag.
 		$js = sprintf(
 			"
-			//<![CDATA[
 			jQuery(document).ready(function($) {
-				var pointer = $('#%s').pointer({
-					content: '%s',
+				var pointer = $(%s).pointer({
+					content: %s,
 					%s
 					%s
 				});
 				pointer.pointer('open');
 				%s
-			});
-			// ]]>",
-			esc_attr( $this->args['id'] ),
-			sprintf( '<h3>%s</h3><p>%s</p>', esc_html( $this->args['title'] ), esc_html( $this->args['content'] ) ),
+			});",
+			wp_json_encode( '#' . $this->args['id'] ),
+			wp_json_encode( sprintf( '<h3>%s</h3><p>%s</p>', esc_html( $this->args['title'] ), esc_html( $this->args['content'] ) ) ),
 			empty( $this->args['position'] ) ? '' : sprintf( 'position: {edge: "%s", align: "%s",},', esc_js( $this->args['position']['edge'] ), esc_js( $this->args['position']['align'] ) ),
-			empty( $this->args['width'] ) ? '' : sprintf( 'pointerWidth: %d,', esc_js( $this->args['width'] ) ),
+			empty( $this->args['width'] ) ? '' : sprintf( 'pointerWidth: %d,', absint( $this->args['width'] ) ),
 			empty( $b ) ? '' : $b
 		);
-		echo "<script type='text/javascript'>" . $js . '</script>';
+		wp_print_inline_script_tag( $js );
 	}
 }
 

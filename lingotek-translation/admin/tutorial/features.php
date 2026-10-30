@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 	<div class="col">
 		<a href="<?php echo esc_url( 'admin.php?page=lingotek-translation' ); ?>"><img src="<?php echo esc_url( LINGOTEK_URL . '/admin/tutorial/img/add-languages.png' ); ?>"></a>
 		<h3><?php echo wp_kses_post( __( 'Translate into new languages', 'lingotek-translation' ) ); ?></h3>
-		<p><?php echo wp_kses_post( sprintf( __( 'Easily translate your site into new languages by adding the desired language to your site.  Ray Enterprise allows you to quickly add any of the most frequently used locales using the <a href="%s" title="Translation &gt; Dashboard">Translation Dashboard</a>.', 'lingotek-translation' ), esc_url( 'admin.php?page=lingotek-translation' ) ) ); ?></p>
+		<p><?php /* translators: %s: URL of the Translation Dashboard. */ echo wp_kses_post( sprintf( __( 'Easily translate your site into new languages by adding the desired language to your site.  Ray Enterprise allows you to quickly add any of the most frequently used locales using the <a href="%s" title="Translation &gt; Dashboard">Translation Dashboard</a>.', 'lingotek-translation' ), esc_url( 'admin.php?page=lingotek-translation' ) ) ); ?></p>
 	</div>
 	<div class="col">
 		<img class="lingotek-bordered" src="<?php echo esc_url( LINGOTEK_URL . '/admin/tutorial/img/automatic-translation.gif' ); ?>">
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) exit();
 <div class="col">
 		<img  src="<?php echo esc_url( LINGOTEK_URL . '/admin/tutorial/img/polylang-compatible.png' ); ?>">
 		<h3><?php echo wp_kses_post( __( 'Fully compatible with Polylang', 'lingotek-translation' ) ); ?></h3>
-		<p><?php echo wp_kses_post( sprintf( __( 'Polylang and Ray Enterprise work together seamlessly.  Continue to use Polylang for content that you want to translate inside WordPress, while sending other content to be translated by Ray Enterprise. The <b style="color: %1$s">orange</b> icons indicate Ray Enterprise statuses/actions while the <b style="color: %2$s">blue</b> icons continue to represent Polylang actions.', 'lingotek-translation' ), 'darkorange', '#0473a8' ) ); ?></p>
+		<p><?php /* translators: 1: colour of the Ray Enterprise icons, 2: colour of the Polylang icons. */ echo wp_kses_post( sprintf( __( 'Polylang and Ray Enterprise work together seamlessly.  Continue to use Polylang for content that you want to translate inside WordPress, while sending other content to be translated by Ray Enterprise. The <b style="color: %1$s">orange</b> icons indicate Ray Enterprise statuses/actions while the <b style="color: %2$s">blue</b> icons continue to represent Polylang actions.', 'lingotek-translation' ), 'darkorange', '#0473a8' ) ); ?></p>
 	</div>
 	<div class="col">
 		<a href="<?php echo esc_url( 'admin.php?page=lingotek-translation_manage&amp;sm=profiles' ); ?>"><img src="<?php echo esc_url( LINGOTEK_URL . '/admin/tutorial/img/translation-profiles.png' ); ?>"></a>

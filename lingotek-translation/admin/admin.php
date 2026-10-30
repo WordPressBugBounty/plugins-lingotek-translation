@@ -41,9 +41,14 @@ class Lingotek_Admin {
 	}
 
 	public function lingotek_authorization_action() {
-		$access_token = isset( $_SERVER['HTTP_TOKEN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_TOKEN'] ) ) : null;
-		if ( is_null( $access_token ) ) {
+		check_ajax_referer( 'lingotek_authorization', '_lingotek_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+		}
+		$access_token = isset( $_SERVER['HTTP_TOKEN'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_TOKEN'] ) ) : '';
+		if ( '' === $access_token ) {
 			Lingotek_Logger::error( 'access_token was empty in lingotek_authorization_action().' );
+			wp_die( '', '', array( 'response' => 400 ) );
 		}
 		update_option( 'lingotek_token', array( 'access_token' => $access_token ) );
 	}
@@ -52,6 +57,14 @@ class Lingotek_Admin {
 	 * Gets current status.
 	 */
 	public function ajax_get_current_status() {
+		check_ajax_referer( 'lingotek_status', '_lingotek_nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'lingotek-translation' ), '', array( 'response' => 403 ) );
+		}
+		// The Lingotek model is only set up for admin-side ajax requests (Polylang's pll_ajax_backend flag).
+		if ( empty( $GLOBALS['wp_lingotek']->model ) ) {
+			wp_send_json_error( null, 400 );
+		}
 		$lgtm       = &$GLOBALS['wp_lingotek']->model;
 		$pllm       = $GLOBALS['polylang']->model;
 		$languages  = pll_languages_list( array( 'fields' => 'locale' ) );
@@ -155,6 +168,8 @@ class Lingotek_Admin {
 		$content_metadata['download_nonce'] = $this->lingotek_get_matching_nonce( 'lingotek-download' );
 		$content_metadata['upload_nonce']   = $this->lingotek_get_matching_nonce( 'lingotek-upload' );
 		$content_metadata['status_nonce']   = $this->lingotek_get_matching_nonce( 'lingotek-status' );
+		// Fresh nonce for the next poll, so a list page left open doesn't outlive its nonce.
+		$content_metadata['updater_nonce']  = wp_create_nonce( 'lingotek_status' );
 		wp_send_json( $content_metadata );
 	}
 
@@ -225,7 +240,16 @@ class Lingotek_Admin {
 				wp_enqueue_script( 'lingotek_' . $script, LINGOTEK_URL . '/js/' . $script . $suffix . '.js', $v[1], LINGOTEK_VERSION, $v[2] );
 				$lingotek_prefs       = get_option( 'lingotek_prefs' );
 				$auto_update_interval = isset( $lingotek_prefs['auto_update_status'] ) ? intval( $lingotek_prefs['auto_update_status'] ) : 10;
-				wp_localize_script( 'lingotek_' . $script, 'updater_data', array( 'interval' => $auto_update_interval ) );
+				// Only Administrators see Lingotek statuses, so other users don't poll for them.
+				$can_use_lingotek = Lingotek_Actions::current_user_can_use_lingotek();
+				wp_localize_script(
+					'lingotek_' . $script,
+					'updater_data',
+					array(
+						'interval' => $can_use_lingotek ? $auto_update_interval : 0,
+						'nonce'    => $can_use_lingotek ? wp_create_nonce( 'lingotek_status' ) : '',
+					)
+				);
 			}
 		}
 
@@ -239,6 +263,17 @@ class Lingotek_Admin {
 		if ( in_array( $screen->base, array( 'edit', 'upload', 'edit-tags' ), true ) ) {
 			wp_enqueue_script( 'lingotek_select2_js', '/js/simple2.min.js', array(), LINGOTEK_VERSION, false );
 			wp_enqueue_style( 'lingotek_select2_css', '/css/simple2.min.css', array(), LINGOTEK_VERSION );
+		}
+
+		// The Translation Dashboard is the Ray Enterprise (Lingotek GMC) web app, loaded from the Lingotek servers.
+		if ( 'toplevel_page_' . $this->plugin_slug === $screen->id ) {
+			$token_details = self::has_token_details();
+			if ( $token_details ) {
+				// No version argument: the remote assets are versioned by the Lingotek service.
+				wp_enqueue_style( 'lingotek_gmc_dashboard', 'https://gmc.lingotek.com/v2/styles/ltk.css', array(), null );
+				wp_enqueue_script( 'lingotek_gmc_dashboard', 'https://gmc.lingotek.com/v2/ltk.min.js', array(), null, true );
+				wp_add_inline_script( 'lingotek_gmc_dashboard', 'var cms_data = ' . wp_json_encode( $this->get_dashboard_cms_data( $token_details ) ) . ';', 'before' );
+			}
 		}
 	}
 
@@ -293,6 +328,7 @@ class Lingotek_Admin {
 		$update_access_token = sanitize_text_field(filter_input( INPUT_GET, 'update_access_token' ));
 
 		if ( ! empty( $delete_access_token ) && 'true' === $delete_access_token ) {
+			check_admin_referer( 'lingotek-disconnect' );
 			delete_option( 'lingotek_token' );
 			delete_option( 'lingotek_community' );
 			delete_option( 'lingotek_defaults' );
@@ -666,37 +702,49 @@ class Lingotek_Admin {
 	 * @since 0.1.0
 	 */
 	public function display_dashboard_page() {
-		$token_details = self::has_token_details();
-		if ( $token_details ) {
-			$community_id = get_option( 'lingotek_community' );
-			$defaults     = get_option( 'lingotek_defaults', array() );
-			$user         = wp_get_current_user();
-
-			// The data that will be passed to the Lingotek GMC dashboard.
-			$cms_data = array(
-				// lingotek.
-				'community_id'   => $community_id,
-				'external_id'    => $token_details['login_id'],
-				'workflow_id'    => $defaults['workflow_id'],
-				'project_id'     => $defaults['project_id'],
-				'first_name'     => $user->display_name,
-				'last_name'      => '',
-				'email'          => get_bloginfo( 'admin_email' ),
-				// cms.
-				'cms_site_id'    => site_url(),
-				'cms_site_key'   => site_url(),
-				'cms_site_name'  => get_bloginfo( 'name' ),
-				'cms_type'       => 'Wordpress',
-				'cms_version'    => get_bloginfo( 'version' ),
-				'cms_tag'        => LINGOTEK_PLUGIN_SLUG,
-				'locale'         => pll_current_language( 'lingotek_locale' ),
-				'module_version' => LINGOTEK_VERSION,
-				'endpoint_url'   => $this->get_dashboard_endpoint(),
-			);
+		if ( self::has_token_details() ) {
+			// The dashboard scripts and data are enqueued in admin_enqueue_scripts().
 			include LINGOTEK_ADMIN_INC . '/view-dashboard.php';
 		} else {
 			$this->display_settings_page();
 		}//end if
+	}
+
+	/**
+	 * Returns the data that will be passed to the Lingotek GMC dashboard.
+	 *
+	 * @since 1.7.5
+	 *
+	 * @param array $token_details Token details returned by has_token_details().
+	 * @return array
+	 */
+	protected function get_dashboard_cms_data( $token_details ) {
+		$community_id = get_option( 'lingotek_community' );
+		$defaults     = get_option( 'lingotek_defaults', array() );
+		$user         = wp_get_current_user();
+
+		return array(
+			// lingotek.
+			'community_id'   => $community_id,
+			'external_id'    => $token_details['login_id'],
+			'workflow_id'    => $defaults['workflow_id'],
+			'project_id'     => $defaults['project_id'],
+			'first_name'     => $user->display_name,
+			'last_name'      => '',
+			'email'          => get_bloginfo( 'admin_email' ),
+			// cms.
+			'cms_site_id'    => site_url(),
+			'cms_site_key'   => site_url(),
+			'cms_site_name'  => get_bloginfo( 'name' ),
+			'cms_type'       => 'Wordpress',
+			'cms_version'    => get_bloginfo( 'version' ),
+			'cms_tag'        => LINGOTEK_PLUGIN_SLUG,
+			'locale'         => pll_current_language( 'lingotek_locale' ),
+			'module_version' => LINGOTEK_VERSION,
+			'endpoint_url'   => $this->get_dashboard_endpoint(),
+			// Sent back by the dashboard in the X-CSRF-Token header when adding or removing languages.
+			'csrf_token'     => wp_create_nonce( 'lingotek_language' ),
+		);
 	}
 
 	/**
